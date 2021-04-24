@@ -1,0 +1,265 @@
+/* trigonometry functions from https://medium.com/swlh/what-the-css-implementing-trigonometry-in-scss-and-lessons-learnt-15703e24e677 , untouched*/
+
+@function factorial($endAt, $startAt: 1, $currentVal: 1) {
+  $accVal: $currentVal;
+
+  @for $i from $startAt + 1 to $endAt + 1 {
+    $accVal: $i * $accVal;
+  }
+
+  @return $accVal;
+}
+
+$PI: 3.14159265358979323846;
+$TWO_PI: $PI * 2;
+$HALF_PI: $PI / 2;
+$QUARTER_PI: $PI / 4;
+$SIN_ITERATION: 10;
+
+@function sin($rad) {
+  // Ensure value is between 0 to TWO_PI
+  $normalisedRad: $rad % $TWO_PI;
+  @if $normalisedRad < 0 {
+    $normalisedRad: $normalisedRad + $TWO_PI;
+  }
+
+  // Known whole numbers to return without computing
+  @if $normalisedRad == 0 or $normalisedRad == $PI {
+    @return 0;
+  }
+  @if $normalisedRad == $HALF_PI {
+    @return 1;
+  }
+
+  // Memorise squared rad val to reduce recomputation
+  $radSquare: $normalisedRad * $normalisedRad;
+  $radPowAccVal: $normalisedRad;
+
+  $factorialCounter: 1;
+  $factorialAccVal: 1;
+
+  $totalVal: $normalisedRad;
+
+  // Iteratively compute an approx value
+  @for $i from 0 to $SIN_ITERATION {
+    $radPowAccVal: $radPowAccVal * -$radSquare;
+    $factorialAccVal: factorial($factorialCounter + 2, $factorialCounter, $factorialAccVal);
+    $factorialCounter: $factorialCounter + 2;
+
+    $totalVal: $totalVal + ($radPowAccVal / $factorialAccVal);
+  }
+
+  @return $totalVal;
+}
+
+@function cos($rad) {
+  @return sin($rad + $HALF_PI);
+}
+
+/* Style sheet based on http://jsfiddle.net/u5e5mhgx/ , heavily modified */
+/* text rotation based on https://codepen.io/n3veR/pen/rwLLxY , simplified & modified*/
+
+$circle-size: 300px;
+$distance: 85px;
+$center-x: 100px;
+$center-y: 125px;
+
+@function rotate-x-around($rad) {
+  @return $center-x - ($distance * cos($rad));
+}
+@function rotate-y-around($rad) {
+  @return $center-y - ($distance * sin($rad));
+}
+
+.circle {
+  width: $circle-size;
+  height: $circle-size;
+  position: absolute;
+  border-radius: $circle-size / 2;
+  text-align: center;
+  transform-origin: center;
+}
+.body {
+  background-color: rgba(255, 0, 0, 0.4);
+  transform: translate(rotate-x-around($HALF_PI), rotate-y-around($HALF_PI));
+
+  @for $i from 0 to 4 {
+    span:nth-child(#{$i + 1}) {
+      bottom: 0;
+      height: 90%;
+      left: 0;
+      margin: auto;
+      min-width: 1px;
+      position: absolute;
+      right: 0;
+      text-align: center;
+      transform-origin: center bottom;
+      width: auto;
+      transform: translate(0px, -60px) rotate(-6deg + (4deg * $i)) translate(0px, 40px);
+    }
+  }
+}
+.mind {
+  background-color: rgba(0, 0, 255, 0.4);
+  transform: translate(rotate-x-around((11 * $PI) / 6), rotate-y-around((11 * $PI) / 6));
+
+  @for $i from 0 to 4 {
+    span:nth-child(#{$i + 1}) {
+      bottom: 0;
+      left: 0;
+      margin: auto;
+      min-width: 1px;
+      position: absolute;
+      right: 0;
+      text-align: center;
+      transform-origin: center top;
+      height: 50%;
+      width: auto;
+      line-height: 265px;
+      transform: rotate(-310deg - (7deg * $i));
+    }
+  }
+}
+
+.soul {
+  background-color: rgba(0, 255, 0, 0.4);
+  transform: translate(rotate-x-around((7 * $PI) / 6), rotate-y-around((7 * $PI) / 6));
+
+  @for $i from 0 to 4 {
+    span:nth-child(#{$i + 1}) {
+      bottom: 0;
+      left: 0;
+      margin: auto;
+      min-width: 1px;
+      position: absolute;
+      right: 0;
+      text-align: center;
+      transform-origin: center top;
+      height: 50%;
+      width: auto;
+      line-height: 265px;
+      transform: rotate(330deg - (7deg * $i));
+    }
+  }
+}
+
+#stat-block {
+  width: 500px;
+  height: 500px;
+  text-transform: uppercase;
+  font-family: sans-serif;
+  font-weight: bold;
+  font-size: 22px;
+
+  & > span {
+    display: inline-block;
+    position: relative;
+    font-size: 14px;
+    text-align: center;
+
+    &.damage-multiplier-text {
+      left: -179px;
+      top: 164px;
+      width: 80px;
+    }
+
+    &.damage-multiplier-value {
+      left: -279px;
+      top: 202px;
+      width: 80px;
+      font-size: 30px;
+    }
+
+    &.hp-text {
+      left: 298px;
+      top: 125px;
+      width: 80px;
+    }
+
+    &.hp-value {
+      left: 216px;
+      top: 165px;
+      width: 80px;
+      font-size: 30px;
+    }
+
+    &.ep-text {
+      left: 49px;
+      top: 299px;
+      width: 80px;
+    }
+
+    &.ep-value {
+      left: -34px;
+      top: 333px;
+      width: 80px;
+      font-size: 30px;
+    }
+
+    &.combat-values-text {
+      left: -113px;
+      top: 161px;
+      width: 80px;
+    }
+
+    &.attack-combat-value {
+      left: -226px;
+      top: 203px;
+      width: 80px;
+      font-size: 20px;
+    }
+
+    &.defence-combat-value {
+      left: 242px;
+      top: 120px;
+      width: 80px;
+      font-size: 20px;
+    }
+
+    &.attack-combat-text {
+      left: 88px;
+      top: 157px;
+      width: 80px;
+      font-size: 13px;
+      transform: rotate(21deg);
+    }
+
+    &.defence-combat-text {
+      left: 87px;
+      top: 157px;
+      width: 80px;
+      font-size: 13px;
+      transform: rotate(-21deg);
+    }
+    &.combat-separator {
+      left: 6px;
+      top: 163px;
+      width: 2px;
+      height: 76px;
+      background-color: black;
+    }
+  }
+}
+input {
+  border: none;
+  background-color: rgba(255, 255, 255, 0.5);
+  display: inline-block;
+  height: 50px;
+  font-size: 45px;
+  width: 100px;
+  text-align: center;
+  position: relative;
+
+  &.body-value {
+    left: 197px;
+    top: 97px;
+  }
+  &.mind-value {
+    left: -40px;
+    top: 324px;
+  }
+  &.soul-value {
+    left: 126px;
+    top: 324px;
+  }
+}
